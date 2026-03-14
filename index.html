@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClipSync</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f11;
+  --surface:#17171a;
+  --surface2:#1e1e22;
+  --surface3:#26262b;
+  --text:#f0eeea;
+  --muted:#8a8890;
+  --hint:#55535c;
+  --border:#2a2a30;
+  --border2:#35353d;
+  --accent:#5dcaa5;
+  --accent-dim:#1d3d32;
+  --accent-text:#9febd0;
+  --red:#e05c6a;
+  --red-dim:#3a1820;
+  --blue:#5b9cf6;
+  --blue-dim:#1a2540;
+  --amber:#efb347;
+  --amber-dim:#372d12;
+  --font:'Sora',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+  --r:10px;--r-sm:7px;--r-lg:14px;
+}
+
+html{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh}
+body{max-width:700px;margin:0 auto;padding:1.5rem 1rem 4rem}
+
+/* ── setup overlay ── */
+#setup-overlay{
+  position:fixed;inset:0;background:rgba(10,10,12,0.95);
+  display:flex;align-items:center;justify-content:center;
+  z-index:999;backdrop-filter:blur(4px);
+}
+.setup-box{
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:var(--r-lg);padding:2rem;max-width:440px;width:90%;
+}
+.setup-box h2{font-size:18px;font-weight:600;margin-bottom:6px}
+.setup-box p{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:1.25rem}
+.setup-box code{font-family:var(--mono);background:var(--surface3);padding:2px 6px;border-radius:4px;font-size:12px;color:var(--accent-text)}
+.step{display:flex;gap:10px;margin-bottom:14px;align-items:flex-start}
+.step-num{
+  width:22px;height:22px;border-radius:50%;background:var(--accent-dim);
+  color:var(--accent-text);font-size:11px;font-weight:600;font-family:var(--mono);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px
+}
+.step-text{font-size:13px;color:var(--muted);line-height:1.5}
+.step-text a{color:var(--accent-text);text-decoration:none}
+.step-text a:hover{text-decoration:underline}
+
+.cfg-field{margin-bottom:10px}
+.cfg-field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;font-family:var(--mono)}
+.cfg-field input{
+  width:100%;background:var(--surface2);border:1px solid var(--border2);
+  border-radius:var(--r-sm);padding:8px 10px;color:var(--text);
+  font-size:12px;font-family:var(--mono);outline:none;
+}
+.cfg-field input:focus{border-color:var(--accent)}
+.cfg-field input::placeholder{color:var(--hint)}
+
+.btn-primary{
+  width:100%;padding:10px;border-radius:var(--r-sm);border:none;
+  background:var(--accent);color:#0a1a15;font-size:14px;font-weight:600;
+  cursor:pointer;font-family:var(--font);transition:opacity 0.15s;margin-top:4px;
+}
+.btn-primary:hover{opacity:0.85}
+.cfg-error{font-size:12px;color:var(--red);margin-top:8px;display:none}
+
+/* ── header ── */
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
+.logo{font-size:18px;font-weight:600;letter-spacing:-0.5px}
+.logo em{color:var(--accent);font-style:normal}
+.status{display:flex;align-items:center;gap:6px;font-size:11px;font-family:var(--mono);color:var(--muted)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--hint)}
+.dot.ok{background:var(--accent)}
+.dot.err{background:var(--red)}
+.dot.loading{background:var(--amber);animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+
+/* ── add card ── */
+.add-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-lg);padding:1.25rem;margin-bottom:1.25rem}
+.tabs{display:flex;gap:4px;margin-bottom:1rem}
+.tab{
+  padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;
+  cursor:pointer;border:1px solid var(--border2);background:transparent;
+  color:var(--muted);font-family:var(--font);transition:all 0.15s;
+}
+.tab.on{background:var(--accent-dim);color:var(--accent-text);border-color:transparent}
+
+.field{margin-bottom:10px}
+.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;font-family:var(--mono)}
+input[type=text],textarea,select{
+  width:100%;background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:8px 10px;color:var(--text);
+  font-size:13px;font-family:var(--font);outline:none;resize:vertical;
+  transition:border-color 0.15s;
+}
+input[type=text]:focus,textarea:focus{border-color:var(--accent)}
+textarea{min-height:80px}
+input::placeholder,textarea::placeholder{color:var(--hint)}
+
+.row{display:flex;gap:8px}
+.row .field{flex:1}
+.btn-row{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+.btn{
+  padding:7px 16px;border-radius:var(--r-sm);font-size:13px;font-weight:500;
+  cursor:pointer;border:1px solid var(--border2);background:var(--surface2);
+  color:var(--text);font-family:var(--font);transition:all 0.15s;
+}
+.btn:hover{background:var(--surface3)}
+.btn.save{background:var(--accent);color:#081a12;border-color:transparent}
+.btn.save:hover{opacity:0.85}
+
+/* ── filters ── */
+.filters{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
+.chip{
+  padding:4px 12px;border-radius:20px;font-size:12px;cursor:pointer;
+  border:1px solid var(--border);background:transparent;color:var(--muted);
+  font-family:var(--font);transition:all 0.15s;
+}
+.chip.on{background:var(--surface2);color:var(--text);border-color:var(--border2)}
+.search{flex:1;min-width:100px}
+.search input{height:30px;padding:0 10px;font-size:12px;background:var(--surface);border-color:var(--border)}
+
+/* ── items ── */
+.item{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-lg);padding:14px 16px;margin-bottom:8px;
+  transition:border-color 0.15s;animation:fadeIn 0.2s ease;
+}
+.item:hover{border-color:var(--border2)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.item-top{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px}
+.badge{
+  padding:2px 8px;border-radius:10px;font-size:10px;font-weight:500;
+  font-family:var(--mono);flex-shrink:0;margin-top:2px;
+}
+.badge-link{background:var(--blue-dim);color:#8bb8f9}
+.badge-note{background:var(--accent-dim);color:var(--accent-text)}
+.item-title{font-size:14px;font-weight:500;flex:1;line-height:1.4;word-break:break-word}
+.item-url{
+  font-size:12px;color:var(--blue);font-family:var(--mono);
+  text-decoration:none;margin-bottom:6px;display:block;
+  word-break:break-all;opacity:0.8;
+}
+.item-url:hover{opacity:1;text-decoration:underline}
+.item-body{font-size:13px;color:var(--muted);line-height:1.65;white-space:pre-wrap;word-break:break-word;margin-bottom:6px}
+.item-footer{display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:8px}
+.item-left{display:flex;flex-direction:column;gap:4px}
+.item-date{font-size:11px;color:var(--hint);font-family:var(--mono)}
+.tags{display:flex;gap:4px;flex-wrap:wrap}
+.tag{font-size:11px;color:var(--muted);background:var(--surface3);border-radius:10px;padding:2px 8px}
+.actions{display:flex;gap:4px;flex-shrink:0}
+.iBtn{
+  width:30px;height:30px;border-radius:var(--r-sm);border:1px solid transparent;
+  background:transparent;cursor:pointer;color:var(--hint);
+  font-size:14px;display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;
+}
+.iBtn:hover{background:var(--surface2);border-color:var(--border2);color:var(--muted)}
+.iBtn.del:hover{color:var(--red);background:var(--red-dim);border-color:transparent}
+.iBtn.cp:hover{color:var(--accent);background:var(--accent-dim);border-color:transparent}
+
+.empty{text-align:center;padding:3rem 1rem;color:var(--hint);font-size:14px}
+.empty .ico{font-size:36px;margin-bottom:10px;opacity:0.5}
+
+.toast{
+  position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);
+  background:var(--surface3);color:var(--text);border:1px solid var(--border2);
+  padding:8px 18px;border-radius:var(--r-sm);font-size:13px;
+  opacity:0;pointer-events:none;transition:opacity 0.2s;
+  font-family:var(--font);white-space:nowrap;z-index:100;
+}
+.toast.show{opacity:1}
+
+.btn-link{
+  background:none;border:none;color:var(--muted);font-size:11px;
+  cursor:pointer;font-family:var(--mono);text-decoration:underline;padding:0;
+}
+.btn-link:hover{color:var(--text)}
+</style>
+</head>
+<body>
+
+<!-- SETUP OVERLAY -->
+<div id="setup-overlay">
+  <div class="setup-box">
+    <h2>⚙️ Configurar ClipSync</h2>
+    <p>Você só precisa fazer isso <strong>uma vez</strong>. Cole as credenciais do seu projeto Firebase abaixo. <button class="btn-link" onclick="showInstructions()">Como conseguir?</button></p>
+    
+    <div id="instructions" style="display:none;background:var(--surface2);border-radius:var(--r-sm);padding:1rem;margin-bottom:1rem">
+      <div class="step"><div class="step-num">1</div><div class="step-text">Acesse <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> e clique em <strong>Adicionar projeto</strong></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text">Dê um nome (ex: <code>clipsync</code>), desative o Google Analytics e clique em <strong>Criar projeto</strong></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text">No menu lateral, vá em <strong>Firestore Database</strong> → <strong>Criar banco de dados</strong> → escolha <strong>Modo de teste</strong> → clique em <strong>Ativar</strong></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-text">Volte ao início do projeto, clique no ícone <code>&lt;/&gt;</code> (Web), dê um apelido e clique em <strong>Registrar app</strong></div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-text">Você verá um bloco de código com <code>firebaseConfig</code>. Copie os valores e cole nos campos abaixo</div></div>
+    </div>
+
+    <div class="cfg-field"><label>apiKey</label><input id="c-apiKey" type="text" placeholder="AIzaSy..."></div>
+    <div class="cfg-field"><label>authDomain</label><input id="c-authDomain" type="text" placeholder="meu-projeto.firebaseapp.com"></div>
+    <div class="cfg-field"><label>projectId</label><input id="c-projectId" type="text" placeholder="meu-projeto"></div>
+    <button class="btn-primary" onclick="saveConfig()">Conectar e entrar →</button>
+    <div class="cfg-error" id="cfg-error">Preencha todos os campos.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="main" style="display:none">
+  <div class="header">
+    <div class="logo">clip<em>sync</em></div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="status">
+        <div class="dot loading" id="dot"></div>
+        <span id="status-txt">conectando</span>
+      </div>
+      <button class="btn-link" onclick="resetConfig()" style="font-size:10px">reconfigurar</button>
+    </div>
+  </div>
+
+  <div class="add-card">
+    <div class="tabs">
+      <button class="tab on" onclick="setType('link',this)">🔗 link</button>
+      <button class="tab" onclick="setType('note',this)">📝 anotação</button>
+    </div>
+    <div id="link-f">
+      <div class="field"><label>título (opcional)</label><input type="text" id="f-title" placeholder="Ex: Tutorial FL Studio"></div>
+      <div class="field"><label>url *</label><input type="text" id="f-url" placeholder="https://..."></div>
+      <div class="field"><label>tags (separe por vírgula)</label><input type="text" id="f-tags" placeholder="música, produção"></div>
+    </div>
+    <div id="note-f" style="display:none">
+      <div class="field"><label>título (opcional)</label><input type="text" id="n-title" placeholder="Ex: Ideia de beat"></div>
+      <div class="field"><label>conteúdo *</label><textarea id="n-body" placeholder="Escreva sua anotação..."></textarea></div>
+      <div class="field"><label>tags (separe por vírgula)</label><input type="text" id="n-tags" placeholder="ideia, lembrete"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn save" onclick="addItem()">salvar</button>
+    </div>
+  </div>
+
+  <div class="filters">
+    <button class="chip on" onclick="setFilter('all',this)">todos</button>
+    <button class="chip" onclick="setFilter('link',this)">links</button>
+    <button class="chip" onclick="setFilter('note',this)">anotações</button>
+    <div class="search"><input type="text" id="search" placeholder="buscar..." oninput="render()"></div>
+  </div>
+
+  <div id="list"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+window._fb = { initializeApp, getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy };
+
+// ── CONFIG ──
+function getConfig() {
+  try { return JSON.parse(localStorage.getItem('cs_config') || 'null'); } catch(e){return null;}
+}
+
+window.saveConfig = function() {
+  const apiKey = document.getElementById('c-apiKey').value.trim();
+  const authDomain = document.getElementById('c-authDomain').value.trim();
+  const projectId = document.getElementById('c-projectId').value.trim();
+  if (!apiKey || !authDomain || !projectId) {
+    document.getElementById('cfg-error').style.display = 'block'; return;
+  }
+  localStorage.setItem('cs_config', JSON.stringify({ apiKey, authDomain, projectId }));
+  startApp({ apiKey, authDomain, projectId });
+};
+
+window.resetConfig = function() {
+  if (confirm('Apagar configuração salva e reconfigurar?')) {
+    localStorage.removeItem('cs_config'); location.reload();
+  }
+};
+
+window.showInstructions = function() {
+  const el = document.getElementById('instructions');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+};
+
+// ── APP ──
+let currentType = 'link', currentFilter = 'all', items = [];
+let db, colRef;
+
+function setDot(s) {
+  const d = document.getElementById('dot'), t = document.getElementById('status-txt');
+  d.className = 'dot ' + (s==='ok'?'ok':s==='err'?'err':'loading');
+  t.textContent = s==='ok'?'sincronizado':s==='err'?'erro de conexão':'conectando...';
+}
+
+window.setType = function(t, el) {
+  currentType = t;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('link-f').style.display = t==='link'?'block':'none';
+  document.getElementById('note-f').style.display = t==='note'?'block':'none';
+};
+
+window.setFilter = function(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.chip').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  render();
+};
+
+function g(id){return document.getElementById(id).value.trim()}
+function clear(){['f-title','f-url','f-tags','n-title','n-body','n-tags'].forEach(id=>document.getElementById(id).value='')}
+
+window.addItem = async function() {
+  let item = { type: currentType, createdAt: Date.now() };
+  if (currentType==='link') {
+    const url = g('f-url');
+    if (!url) { toast('informe a URL'); return; }
+    item.title = g('f-title') || url;
+    item.url = url.startsWith('http') ? url : 'https://'+url;
+    item.tags = g('f-tags').split(',').map(t=>t.trim()).filter(Boolean);
+  } else {
+    const body = g('n-body'), title = g('n-title');
+    if (!body && !title) { toast('escreva algo'); return; }
+    item.title = title || (body.slice(0,50)+(body.length>50?'...':''));
+    item.body = body;
+    item.tags = g('n-tags').split(',').map(t=>t.trim()).filter(Boolean);
+  }
+  try { await _fb.addDoc(colRef, item); clear(); toast('salvo!'); }
+  catch(e) { toast('erro ao salvar'); }
+};
+
+window.deleteItem = async function(id) {
+  if (!confirm('Apagar este item?')) return;
+  try { await _fb.deleteDoc(_fb.doc(db, 'items', id)); }
+  catch(e) { toast('erro ao apagar'); }
+};
+
+window.copyText = function(text) {
+  navigator.clipboard.writeText(text).then(()=>toast('copiado!')).catch(()=>toast('erro ao copiar'));
+};
+
+function fmtDate(ts) {
+  return new Date(ts).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+}
+
+function render() {
+  const q = document.getElementById('search').value.toLowerCase();
+  let filtered = items.filter(i=>{
+    if (currentFilter!=='all' && i.type!==currentFilter) return false;
+    if (q) { const hay=(i.title+' '+(i.url||'')+' '+(i.body||'')+' '+(i.tags||[]).join(' ')).toLowerCase(); return hay.includes(q); }
+    return true;
+  });
+  const list = document.getElementById('list');
+  if (!filtered.length) {
+    list.innerHTML='<div class="empty"><div class="ico">📋</div>nenhum item ainda.<br>Salve seu primeiro link ou anotação!</div>';
+    return;
+  }
+  list.innerHTML = filtered.map(item=>{
+    const badge = item.type==='link'?'<span class="badge badge-link">link</span>':'<span class="badge badge-note">nota</span>';
+    const tags = (item.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('');
+    const copyVal = item.type==='link' ? item.url : (item.body||item.title);
+    const copyEsc = copyVal.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const body = item.type==='link'
+      ? `<a class="item-url" href="${item.url}" target="_blank" rel="noopener">${item.url}</a>`
+      : (item.body ? `<div class="item-body">${item.body}</div>` : '');
+    return `<div class="item">
+      <div class="item-top">${badge}<div class="item-title">${item.title}</div></div>
+      ${body}
+      <div class="item-footer">
+        <div class="item-left">
+          <div class="item-date">${fmtDate(item.createdAt)}</div>
+          ${tags?`<div class="tags">${tags}</div>`:''}
+        </div>
+        <div class="actions">
+          <button class="iBtn cp" title="copiar" onclick="copyText('${copyEsc}')">⧉</button>
+          <button class="iBtn del" title="apagar" onclick="deleteItem('${item.id}')">✕</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+function startApp(cfg) {
+  document.getElementById('setup-overlay').style.display='none';
+  document.getElementById('main').style.display='block';
+  try {
+    const app = _fb.initializeApp(cfg);
+    db = _fb.getFirestore(app);
+    colRef = _fb.collection(db,'items');
+    const q = _fb.query(colRef, _fb.orderBy('createdAt','desc'));
+    _fb.onSnapshot(q, snap=>{
+      items = snap.docs.map(d=>({id:d.id,...d.data()}));
+      render(); setDot('ok');
+    }, err=>{ setDot('err'); });
+  } catch(e) { setDot('err'); }
+}
+
+// init
+const cfg = getConfig();
+if (cfg) startApp(cfg);
+</script>
+</body>
+</html>
