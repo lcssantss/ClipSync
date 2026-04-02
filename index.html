@@ -6,74 +6,40 @@
 <title>ClipSync</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
-
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0f0f11;
-  --surface:#17171a;
-  --surface2:#1e1e22;
-  --surface3:#26262b;
-  --text:#f0eeea;
-  --muted:#8a8890;
-  --hint:#55535c;
-  --border:#2a2a30;
-  --border2:#35353d;
-  --accent:#5dcaa5;
-  --accent-dim:#1d3d32;
-  --accent-text:#9febd0;
-  --red:#e05c6a;
-  --red-dim:#3a1820;
-  --blue:#5b9cf6;
-  --blue-dim:#1a2540;
-  --amber:#efb347;
-  --amber-dim:#372d12;
-  --font:'Sora',sans-serif;
-  --mono:'IBM Plex Mono',monospace;
+  --bg:#0f0f11;--surface:#17171a;--surface2:#1e1e22;--surface3:#26262b;
+  --text:#f0eeea;--muted:#8a8890;--hint:#55535c;
+  --border:#2a2a30;--border2:#35353d;
+  --accent:#5dcaa5;--accent-dim:#1d3d32;--accent-text:#9febd0;
+  --red:#e05c6a;--red-dim:#3a1820;
+  --blue:#5b9cf6;--blue-dim:#1a2540;
+  --amber:#efb347;--amber-dim:#372d12;
+  --purple:#a78bfa;--purple-dim:#2d1f4e;
+  --font:'Sora',sans-serif;--mono:'IBM Plex Mono',monospace;
   --r:10px;--r-sm:7px;--r-lg:14px;
 }
-
 html{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh}
 body{max-width:700px;margin:0 auto;padding:1.5rem 1rem 4rem}
 
 /* ── setup overlay ── */
-#setup-overlay{
-  position:fixed;inset:0;background:rgba(10,10,12,0.95);
-  display:flex;align-items:center;justify-content:center;
-  z-index:999;backdrop-filter:blur(4px);
-}
-.setup-box{
-  background:var(--surface);border:1px solid var(--border2);
-  border-radius:var(--r-lg);padding:2rem;max-width:440px;width:90%;
-}
+#setup-overlay{position:fixed;inset:0;background:rgba(10,10,12,0.96);display:flex;align-items:center;justify-content:center;z-index:999;backdrop-filter:blur(4px)}
+.setup-box{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-lg);padding:2rem;max-width:440px;width:90%;max-height:90vh;overflow-y:auto}
 .setup-box h2{font-size:18px;font-weight:600;margin-bottom:6px}
 .setup-box p{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:1.25rem}
 .setup-box code{font-family:var(--mono);background:var(--surface3);padding:2px 6px;border-radius:4px;font-size:12px;color:var(--accent-text)}
 .step{display:flex;gap:10px;margin-bottom:14px;align-items:flex-start}
-.step-num{
-  width:22px;height:22px;border-radius:50%;background:var(--accent-dim);
-  color:var(--accent-text);font-size:11px;font-weight:600;font-family:var(--mono);
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px
-}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--accent-dim);color:var(--accent-text);font-size:11px;font-weight:600;font-family:var(--mono);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
 .step-text{font-size:13px;color:var(--muted);line-height:1.5}
 .step-text a{color:var(--accent-text);text-decoration:none}
 .step-text a:hover{text-decoration:underline}
-
 .cfg-field{margin-bottom:10px}
 .cfg-field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;font-family:var(--mono)}
-.cfg-field input{
-  width:100%;background:var(--surface2);border:1px solid var(--border2);
-  border-radius:var(--r-sm);padding:8px 10px;color:var(--text);
-  font-size:12px;font-family:var(--mono);outline:none;
-}
+.cfg-field input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;color:var(--text);font-size:12px;font-family:var(--mono);outline:none}
 .cfg-field input:focus{border-color:var(--accent)}
 .cfg-field input::placeholder{color:var(--hint)}
-
-.btn-primary{
-  width:100%;padding:10px;border-radius:var(--r-sm);border:none;
-  background:var(--accent);color:#0a1a15;font-size:14px;font-weight:600;
-  cursor:pointer;font-family:var(--font);transition:opacity 0.15s;margin-top:4px;
-}
+.btn-primary{width:100%;padding:10px;border-radius:var(--r-sm);border:none;background:var(--accent);color:#0a1a15;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font);transition:opacity 0.15s;margin-top:4px}
 .btn-primary:hover{opacity:0.85}
 .cfg-error{font-size:12px;color:var(--red);margin-top:8px;display:none}
 
@@ -83,113 +49,121 @@ body{max-width:700px;margin:0 auto;padding:1.5rem 1rem 4rem}
 .logo em{color:var(--accent);font-style:normal}
 .status{display:flex;align-items:center;gap:6px;font-size:11px;font-family:var(--mono);color:var(--muted)}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--hint)}
-.dot.ok{background:var(--accent)}
-.dot.err{background:var(--red)}
-.dot.loading{background:var(--amber);animation:blink 1s infinite}
+.dot.ok{background:var(--accent)}.dot.err{background:var(--red)}.dot.loading{background:var(--amber);animation:blink 1s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+.header-right{display:flex;align-items:center;gap:10px}
+
+/* ── tags manager ── */
+#tags-panel{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-lg);padding:1rem 1.25rem;margin-bottom:1rem;display:none}
+#tags-panel h3{font-size:12px;font-weight:600;color:var(--muted);font-family:var(--mono);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.05em}
+.fixed-tags-list{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;min-height:24px}
+.ftag{
+  display:inline-flex;align-items:center;gap:5px;padding:3px 10px;
+  border-radius:20px;font-size:12px;background:var(--surface3);
+  color:var(--muted);border:1px solid var(--border2);
+}
+.ftag .rm{background:none;border:none;color:var(--hint);cursor:pointer;font-size:13px;line-height:1;padding:0;display:flex;align-items:center}
+.ftag .rm:hover{color:var(--red)}
+.tag-add-row{display:flex;gap:6px}
+.tag-add-row input{flex:1;height:32px;padding:0 10px;font-size:12px}
+.tag-add-row button{padding:0 14px;height:32px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:12px;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.tag-add-row button:hover{background:var(--surface3)}
 
 /* ── add card ── */
 .add-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-lg);padding:1.25rem;margin-bottom:1.25rem}
-.tabs{display:flex;gap:4px;margin-bottom:1rem}
-.tab{
-  padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;
-  cursor:pointer;border:1px solid var(--border2);background:transparent;
-  color:var(--muted);font-family:var(--font);transition:all 0.15s;
-}
+.tabs{display:flex;gap:4px;margin-bottom:1rem;flex-wrap:wrap}
+.tab{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--muted);font-family:var(--font);transition:all 0.15s}
 .tab.on{background:var(--accent-dim);color:var(--accent-text);border-color:transparent}
-
 .field{margin-bottom:10px}
 .field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;font-family:var(--mono)}
-input[type=text],textarea,select{
-  width:100%;background:var(--surface2);border:1px solid var(--border);
-  border-radius:var(--r-sm);padding:8px 10px;color:var(--text);
-  font-size:13px;font-family:var(--font);outline:none;resize:vertical;
-  transition:border-color 0.15s;
-}
+input[type=text],textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 10px;color:var(--text);font-size:13px;font-family:var(--font);outline:none;resize:vertical;transition:border-color 0.15s}
 input[type=text]:focus,textarea:focus{border-color:var(--accent)}
 textarea{min-height:80px}
 input::placeholder,textarea::placeholder{color:var(--hint)}
-
-.row{display:flex;gap:8px}
-.row .field{flex:1}
-.btn-row{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
-.btn{
-  padding:7px 16px;border-radius:var(--r-sm);font-size:13px;font-weight:500;
-  cursor:pointer;border:1px solid var(--border2);background:var(--surface2);
-  color:var(--text);font-family:var(--font);transition:all 0.15s;
-}
+.row{display:flex;gap:8px}.row .field{flex:1}
+.btn-row{display:flex;justify-content:flex-end;gap:8px;margin-top:4px;align-items:center}
+.btn{padding:7px 16px;border-radius:var(--r-sm);font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-family:var(--font);transition:all 0.15s}
 .btn:hover{background:var(--surface3)}
 .btn.save{background:var(--accent);color:#081a12;border-color:transparent}
 .btn.save:hover{opacity:0.85}
+.btn.save:disabled{opacity:0.4;cursor:not-allowed}
+
+/* tag selector inside form */
+.tag-selector{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.tsel{padding:3px 10px;border-radius:20px;font-size:11px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--muted);font-family:var(--font);transition:all 0.12s}
+.tsel.on{background:var(--accent-dim);color:var(--accent-text);border-color:transparent}
+
+/* fetch title */
+.fetch-row{display:flex;align-items:center;gap:8px;margin-top:4px}
+.fetch-btn{padding:4px 10px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--muted);font-size:11px;font-family:var(--mono);cursor:pointer;white-space:nowrap;transition:all 0.15s}
+.fetch-btn:hover{color:var(--accent);border-color:var(--accent-dim)}
+.fetch-btn:disabled{opacity:0.4;cursor:not-allowed}
+.fetch-hint{font-size:11px;color:var(--hint);font-family:var(--mono)}
+
+/* file upload */
+.file-drop{
+  border:1px dashed var(--border2);border-radius:var(--r-sm);
+  padding:20px;text-align:center;cursor:pointer;transition:all 0.15s;
+  background:var(--surface2);position:relative;
+}
+.file-drop:hover,.file-drop.over{border-color:var(--accent);background:var(--accent-dim)}
+.file-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.file-drop p{font-size:13px;color:var(--muted);pointer-events:none}
+.file-drop small{font-size:11px;color:var(--hint);font-family:var(--mono)}
+.file-selected{font-size:12px;color:var(--accent-text);margin-top:6px;font-family:var(--mono)}
 
 /* ── filters ── */
 .filters{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
-.chip{
-  padding:4px 12px;border-radius:20px;font-size:12px;cursor:pointer;
-  border:1px solid var(--border);background:transparent;color:var(--muted);
-  font-family:var(--font);transition:all 0.15s;
-}
+.chip{padding:4px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:var(--font);transition:all 0.15s}
 .chip.on{background:var(--surface2);color:var(--text);border-color:var(--border2)}
 .search{flex:1;min-width:100px}
 .search input{height:30px;padding:0 10px;font-size:12px;background:var(--surface);border-color:var(--border)}
 
 /* ── items ── */
-.item{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--r-lg);padding:14px 16px;margin-bottom:8px;
-  transition:border-color 0.15s;animation:fadeIn 0.2s ease;
-}
+.item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:8px;transition:border-color 0.15s;animation:fadeIn 0.2s ease}
 .item:hover{border-color:var(--border2)}
+.item.pinned{border-color:var(--amber-dim);background:#1a1810}
+.item.pinned:hover{border-color:var(--amber)}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-
 .item-top{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px}
-.badge{
-  padding:2px 8px;border-radius:10px;font-size:10px;font-weight:500;
-  font-family:var(--mono);flex-shrink:0;margin-top:2px;
-}
+.badge{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:500;font-family:var(--mono);flex-shrink:0;margin-top:2px}
 .badge-link{background:var(--blue-dim);color:#8bb8f9}
 .badge-note{background:var(--accent-dim);color:var(--accent-text)}
+.badge-file{background:var(--purple-dim);color:#c4b5fd}
+.pin-icon{font-size:13px;margin-top:2px;flex-shrink:0;opacity:0.7}
 .item-title{font-size:14px;font-weight:500;flex:1;line-height:1.4;word-break:break-word}
-.item-url{
-  font-size:12px;color:var(--blue);font-family:var(--mono);
-  text-decoration:none;margin-bottom:6px;display:block;
-  word-break:break-all;opacity:0.8;
-}
+.item-url{font-size:12px;color:var(--blue);font-family:var(--mono);text-decoration:none;margin-bottom:6px;display:block;word-break:break-all;opacity:0.8}
 .item-url:hover{opacity:1;text-decoration:underline}
 .item-body{font-size:13px;color:var(--muted);line-height:1.65;white-space:pre-wrap;word-break:break-word;margin-bottom:6px}
 .item-footer{display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:8px}
 .item-left{display:flex;flex-direction:column;gap:4px}
 .item-date{font-size:11px;color:var(--hint);font-family:var(--mono)}
-.tags{display:flex;gap:4px;flex-wrap:wrap}
+.expire-badge{font-size:10px;font-family:var(--mono);background:var(--amber-dim);color:var(--amber);padding:1px 7px;border-radius:10px;display:inline-block}
+.tags-row{display:flex;gap:4px;flex-wrap:wrap}
 .tag{font-size:11px;color:var(--muted);background:var(--surface3);border-radius:10px;padding:2px 8px}
 .actions{display:flex;gap:4px;flex-shrink:0}
-.iBtn{
-  width:30px;height:30px;border-radius:var(--r-sm);border:1px solid transparent;
-  background:transparent;cursor:pointer;color:var(--hint);
-  font-size:14px;display:flex;align-items:center;justify-content:center;
-  transition:all 0.15s;
-}
+.iBtn{width:30px;height:30px;border-radius:var(--r-sm);border:1px solid transparent;background:transparent;cursor:pointer;color:var(--hint);font-size:14px;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
 .iBtn:hover{background:var(--surface2);border-color:var(--border2);color:var(--muted)}
 .iBtn.del:hover{color:var(--red);background:var(--red-dim);border-color:transparent}
 .iBtn.cp:hover{color:var(--accent);background:var(--accent-dim);border-color:transparent}
+.iBtn.pin-btn:hover{color:var(--amber);background:var(--amber-dim);border-color:transparent}
+.iBtn.pin-btn.on{color:var(--amber);opacity:1}
+.file-dl{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--purple);font-family:var(--mono);cursor:pointer;background:var(--purple-dim);padding:4px 10px;border-radius:var(--r-sm);border:none;margin-bottom:6px}
+.file-dl:hover{opacity:0.8}
+.file-info{font-size:11px;color:var(--hint);font-family:var(--mono)}
 
 .empty{text-align:center;padding:3rem 1rem;color:var(--hint);font-size:14px}
 .empty .ico{font-size:36px;margin-bottom:10px;opacity:0.5}
-
-.toast{
-  position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);
-  background:var(--surface3);color:var(--text);border:1px solid var(--border2);
-  padding:8px 18px;border-radius:var(--r-sm);font-size:13px;
-  opacity:0;pointer-events:none;transition:opacity 0.2s;
-  font-family:var(--font);white-space:nowrap;z-index:100;
-}
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--surface3);color:var(--text);border:1px solid var(--border2);padding:8px 18px;border-radius:var(--r-sm);font-size:13px;opacity:0;pointer-events:none;transition:opacity 0.2s;font-family:var(--font);white-space:nowrap;z-index:200}
 .toast.show{opacity:1}
-
-.btn-link{
-  background:none;border:none;color:var(--muted);font-size:11px;
-  cursor:pointer;font-family:var(--mono);text-decoration:underline;padding:0;
-}
+.btn-link{background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:var(--mono);text-decoration:underline;padding:0}
 .btn-link:hover{color:var(--text)}
+.icon-btn-sm{background:none;border:none;cursor:pointer;font-size:15px;color:var(--muted);padding:4px;border-radius:var(--r-sm);transition:all 0.15s;display:flex;align-items:center}
+.icon-btn-sm:hover{color:var(--text);background:var(--surface2)}
+
+/* progress bar */
+.upload-progress{height:3px;background:var(--border2);border-radius:2px;margin-top:8px;overflow:hidden;display:none}
+.upload-progress-bar{height:100%;background:var(--accent);width:0;transition:width 0.3s}
 </style>
 </head>
 <body>
@@ -198,16 +172,14 @@ input::placeholder,textarea::placeholder{color:var(--hint)}
 <div id="setup-overlay">
   <div class="setup-box">
     <h2>⚙️ Configurar ClipSync</h2>
-    <p>Você só precisa fazer isso <strong>uma vez</strong>. Cole as credenciais do seu projeto Firebase abaixo. <button class="btn-link" onclick="showInstructions()">Como conseguir?</button></p>
-    
+    <p>Cole as credenciais do seu projeto Firebase abaixo. Você só faz isso <strong>uma vez</strong>. <button class="btn-link" onclick="showInstructions()">Como conseguir?</button></p>
     <div id="instructions" style="display:none;background:var(--surface2);border-radius:var(--r-sm);padding:1rem;margin-bottom:1rem">
-      <div class="step"><div class="step-num">1</div><div class="step-text">Acesse <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> e clique em <strong>Adicionar projeto</strong></div></div>
+      <div class="step"><div class="step-num">1</div><div class="step-text">Acesse <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> → <strong>Adicionar projeto</strong></div></div>
       <div class="step"><div class="step-num">2</div><div class="step-text">Dê um nome (ex: <code>clipsync</code>), desative o Google Analytics e clique em <strong>Criar projeto</strong></div></div>
-      <div class="step"><div class="step-num">3</div><div class="step-text">No menu lateral, vá em <strong>Firestore Database</strong> → <strong>Criar banco de dados</strong> → escolha <strong>Modo de teste</strong> → clique em <strong>Ativar</strong></div></div>
-      <div class="step"><div class="step-num">4</div><div class="step-text">Volte ao início do projeto, clique no ícone <code>&lt;/&gt;</code> (Web), dê um apelido e clique em <strong>Registrar app</strong></div></div>
-      <div class="step"><div class="step-num">5</div><div class="step-text">Você verá um bloco de código com <code>firebaseConfig</code>. Copie os valores e cole nos campos abaixo</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text">No menu lateral: <strong>Firestore Database</strong> → <strong>Criar banco de dados</strong> → <strong>Modo de teste</strong> → <strong>Ativar</strong></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-text">Volte ao início, clique no ícone <code>&lt;/&gt;</code>, dê um apelido e clique em <strong>Registrar app</strong></div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-text">Copie os valores do bloco <code>firebaseConfig</code> e cole abaixo</div></div>
     </div>
-
     <div class="cfg-field"><label>apiKey</label><input id="c-apiKey" type="text" placeholder="AIzaSy..."></div>
     <div class="cfg-field"><label>authDomain</label><input id="c-authDomain" type="text" placeholder="meu-projeto.firebaseapp.com"></div>
     <div class="cfg-field"><label>projectId</label><input id="c-projectId" type="text" placeholder="meu-projeto"></div>
@@ -220,39 +192,98 @@ input::placeholder,textarea::placeholder{color:var(--hint)}
 <div id="main" style="display:none">
   <div class="header">
     <div class="logo">clip<em>sync</em></div>
-    <div style="display:flex;align-items:center;gap:12px">
+    <div class="header-right">
+      <button class="icon-btn-sm" title="Gerenciar tags fixas" onclick="toggleTagsPanel()">🏷️</button>
       <div class="status">
         <div class="dot loading" id="dot"></div>
         <span id="status-txt">conectando</span>
       </div>
-      <button class="btn-link" onclick="resetConfig()" style="font-size:10px">reconfigurar</button>
+      <button class="btn-link" onclick="resetConfig()" style="font-size:10px">⚙</button>
     </div>
   </div>
 
+  <!-- TAGS MANAGER PANEL -->
+  <div id="tags-panel">
+    <h3>tags fixas</h3>
+    <div class="fixed-tags-list" id="fixed-tags-list"></div>
+    <div class="tag-add-row">
+      <input type="text" id="new-tag-input" placeholder="nova tag..." onkeydown="if(event.key==='Enter')addFixedTag()">
+      <button onclick="addFixedTag()">+ adicionar</button>
+    </div>
+  </div>
+
+  <!-- ADD CARD -->
   <div class="add-card">
     <div class="tabs">
       <button class="tab on" onclick="setType('link',this)">🔗 link</button>
       <button class="tab" onclick="setType('note',this)">📝 anotação</button>
+      <button class="tab" onclick="setType('file',this)">📎 arquivo</button>
     </div>
+
+    <!-- link fields -->
     <div id="link-f">
-      <div class="field"><label>título (opcional)</label><input type="text" id="f-title" placeholder="Ex: Tutorial FL Studio"></div>
-      <div class="field"><label>url *</label><input type="text" id="f-url" placeholder="https://..."></div>
-      <div class="field"><label>tags (separe por vírgula)</label><input type="text" id="f-tags" placeholder="música, produção"></div>
+      <div class="field">
+        <label>url *</label>
+        <input type="text" id="f-url" placeholder="https://..." oninput="onUrlInput()">
+      </div>
+      <div class="fetch-row">
+        <button class="fetch-btn" id="fetch-btn" onclick="fetchTitle()" disabled>↓ usar título do site</button>
+        <span class="fetch-hint" id="fetch-hint"></span>
+      </div>
+      <div class="field" style="margin-top:10px">
+        <label>título (opcional)</label>
+        <input type="text" id="f-title" placeholder="deixe vazio para usar a URL">
+      </div>
+      <div class="field">
+        <label>tags</label>
+        <div class="tag-selector" id="link-tag-selector"></div>
+        <input type="text" id="f-tags" placeholder="ou escreva tags personalizadas..." style="margin-top:6px">
+      </div>
     </div>
+
+    <!-- note fields -->
     <div id="note-f" style="display:none">
       <div class="field"><label>título (opcional)</label><input type="text" id="n-title" placeholder="Ex: Ideia de beat"></div>
       <div class="field"><label>conteúdo *</label><textarea id="n-body" placeholder="Escreva sua anotação..."></textarea></div>
-      <div class="field"><label>tags (separe por vírgula)</label><input type="text" id="n-tags" placeholder="ideia, lembrete"></div>
+      <div class="field">
+        <label>tags</label>
+        <div class="tag-selector" id="note-tag-selector"></div>
+        <input type="text" id="n-tags" placeholder="ou escreva tags personalizadas..." style="margin-top:6px">
+      </div>
     </div>
+
+    <!-- file fields -->
+    <div id="file-f" style="display:none">
+      <div class="field">
+        <label>arquivo (máx. ~700 KB — expira em 24h automaticamente)</label>
+        <div class="file-drop" id="file-drop" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="onFileDrop(event)">
+          <input type="file" id="f-file" onchange="onFileSelect(event)">
+          <p>Clique ou arraste o arquivo aqui</p>
+          <small>Limite: ~700 KB · PDF, imagem, txt, etc.</small>
+        </div>
+        <div class="file-selected" id="file-selected"></div>
+        <div class="upload-progress" id="upload-progress"><div class="upload-progress-bar" id="upload-bar"></div></div>
+      </div>
+      <div class="field"><label>descrição (opcional)</label><input type="text" id="f-file-desc" placeholder="Ex: Anotações de química"></div>
+      <div class="field">
+        <label>tags</label>
+        <div class="tag-selector" id="file-tag-selector"></div>
+        <input type="text" id="f-file-tags" placeholder="ou escreva tags personalizadas..." style="margin-top:6px">
+      </div>
+    </div>
+
     <div class="btn-row">
-      <button class="btn save" onclick="addItem()">salvar</button>
+      <button class="btn save" id="save-btn" onclick="addItem()">salvar</button>
     </div>
   </div>
 
+  <!-- FILTERS -->
   <div class="filters">
     <button class="chip on" onclick="setFilter('all',this)">todos</button>
     <button class="chip" onclick="setFilter('link',this)">links</button>
     <button class="chip" onclick="setFilter('note',this)">anotações</button>
+    <button class="chip" onclick="setFilter('file',this)">arquivos</button>
+    <button class="chip" onclick="setFilter('pinned',this)">📌 fixados</button>
     <div class="search"><input type="text" id="search" placeholder="buscar..." oninput="render()"></div>
   </div>
 
@@ -261,131 +292,296 @@ input::placeholder,textarea::placeholder{color:var(--hint)}
 
 <div class="toast" id="toast"></div>
 
-<!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import {
+  getFirestore, collection, addDoc, deleteDoc, doc,
+  onSnapshot, query, orderBy, updateDoc, where, getDocs
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-window._fb = { initializeApp, getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy };
+window._fb = { initializeApp, getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, updateDoc, where, getDocs };
 
 // ── CONFIG ──
-function getConfig() {
-  try { return JSON.parse(localStorage.getItem('cs_config') || 'null'); } catch(e){return null;}
+function getConfig(){try{return JSON.parse(localStorage.getItem('cs_config')||'null')}catch(e){return null}}
+window.saveConfig=function(){
+  const a=document.getElementById('c-apiKey').value.trim(),b=document.getElementById('c-authDomain').value.trim(),c=document.getElementById('c-projectId').value.trim();
+  if(!a||!b||!c){document.getElementById('cfg-error').style.display='block';return}
+  localStorage.setItem('cs_config',JSON.stringify({apiKey:a,authDomain:b,projectId:c}));
+  startApp({apiKey:a,authDomain:b,projectId:c});
+};
+window.resetConfig=function(){if(confirm('Apagar configuração salva?')){localStorage.removeItem('cs_config');location.reload()}};
+window.showInstructions=function(){const el=document.getElementById('instructions');el.style.display=el.style.display==='none'?'block':'none'};
+
+// ── STATE ──
+let currentType='link', currentFilter='all', items=[], fixedTags=[], selectedTags=new Set();
+let db, colRef, tagsColRef, pendingFile=null;
+
+// ── UTILS ──
+function setDot(s){
+  const d=document.getElementById('dot'),t=document.getElementById('status-txt');
+  d.className='dot '+(s==='ok'?'ok':s==='err'?'err':'loading');
+  t.textContent=s==='ok'?'sincronizado':s==='err'?'erro de conexão':'conectando...';
 }
-
-window.saveConfig = function() {
-  const apiKey = document.getElementById('c-apiKey').value.trim();
-  const authDomain = document.getElementById('c-authDomain').value.trim();
-  const projectId = document.getElementById('c-projectId').value.trim();
-  if (!apiKey || !authDomain || !projectId) {
-    document.getElementById('cfg-error').style.display = 'block'; return;
-  }
-  localStorage.setItem('cs_config', JSON.stringify({ apiKey, authDomain, projectId }));
-  startApp({ apiKey, authDomain, projectId });
-};
-
-window.resetConfig = function() {
-  if (confirm('Apagar configuração salva e reconfigurar?')) {
-    localStorage.removeItem('cs_config'); location.reload();
-  }
-};
-
-window.showInstructions = function() {
-  const el = document.getElementById('instructions');
-  el.style.display = el.style.display === 'none' ? 'block' : 'none';
-};
-
-// ── APP ──
-let currentType = 'link', currentFilter = 'all', items = [];
-let db, colRef;
-
-function setDot(s) {
-  const d = document.getElementById('dot'), t = document.getElementById('status-txt');
-  d.className = 'dot ' + (s==='ok'?'ok':s==='err'?'err':'loading');
-  t.textContent = s==='ok'?'sincronizado':s==='err'?'erro de conexão':'conectando...';
-}
-
-window.setType = function(t, el) {
-  currentType = t;
-  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
-  el.classList.add('on');
-  document.getElementById('link-f').style.display = t==='link'?'block':'none';
-  document.getElementById('note-f').style.display = t==='note'?'block':'none';
-};
-
-window.setFilter = function(f, el) {
-  currentFilter = f;
-  document.querySelectorAll('.chip').forEach(b=>b.classList.remove('on'));
-  el.classList.add('on');
-  render();
-};
-
 function g(id){return document.getElementById(id).value.trim()}
-function clear(){['f-title','f-url','f-tags','n-title','n-body','n-tags'].forEach(id=>document.getElementById(id).value='')}
+function clearForm(){
+  ['f-title','f-url','f-tags','n-title','n-body','n-tags','f-file-desc','f-file-tags'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+  pendingFile=null;
+  document.getElementById('file-selected').textContent='';
+  document.getElementById('f-file').value='';
+  document.getElementById('file-drop').classList.remove('over');
+  selectedTags.clear();
+  renderTagSelectors();
+  document.getElementById('fetch-hint').textContent='';
+  document.getElementById('fetch-btn').disabled=true;
+}
+function toast(msg,dur=2200){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur)}
+function fmtDate(ts){return new Date(ts).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}
+function fmtSize(b){return b<1024?b+'B':b<1048576?(b/1024).toFixed(1)+'KB':(b/1048576).toFixed(1)+'MB'}
+function timeLeft(expiry){
+  const diff=expiry-Date.now();
+  if(diff<=0)return'expirado';
+  const h=Math.floor(diff/3600000),m=Math.floor((diff%3600000)/60000);
+  return h>0?`expira em ${h}h ${m}m`:`expira em ${m}min`;
+}
 
-window.addItem = async function() {
-  let item = { type: currentType, createdAt: Date.now() };
-  if (currentType==='link') {
-    const url = g('f-url');
-    if (!url) { toast('informe a URL'); return; }
-    item.title = g('f-title') || url;
-    item.url = url.startsWith('http') ? url : 'https://'+url;
-    item.tags = g('f-tags').split(',').map(t=>t.trim()).filter(Boolean);
-  } else {
-    const body = g('n-body'), title = g('n-title');
-    if (!body && !title) { toast('escreva algo'); return; }
-    item.title = title || (body.slice(0,50)+(body.length>50?'...':''));
-    item.body = body;
-    item.tags = g('n-tags').split(',').map(t=>t.trim()).filter(Boolean);
-  }
-  try { await _fb.addDoc(colRef, item); clear(); toast('salvo!'); }
-  catch(e) { toast('erro ao salvar'); }
+// ── TAGS PANEL ──
+window.toggleTagsPanel=function(){const p=document.getElementById('tags-panel');p.style.display=p.style.display==='none'?'block':'none'}
+function renderFixedTagsList(){
+  const el=document.getElementById('fixed-tags-list');
+  el.innerHTML=fixedTags.length?fixedTags.map(t=>`<span class="ftag">${t}<button class="rm" onclick="removeFixedTag('${t.replace(/'/g,"\\'")}')">×</button></span>`).join(''):'<span style="font-size:12px;color:var(--hint)">nenhuma tag fixa ainda</span>';
+}
+window.addFixedTag=async function(){
+  const inp=document.getElementById('new-tag-input');
+  const val=inp.value.trim().toLowerCase();
+  if(!val)return;
+  if(fixedTags.includes(val)){toast('tag já existe');return}
+  fixedTags.push(val);
+  inp.value='';
+  await saveFixedTags();
+  renderFixedTagsList();
+  renderTagSelectors();
+};
+window.removeFixedTag=async function(tag){
+  fixedTags=fixedTags.filter(t=>t!==tag);
+  selectedTags.delete(tag);
+  await saveFixedTags();
+  renderFixedTagsList();
+  renderTagSelectors();
+};
+async function saveFixedTags(){
+  try{
+    const snap=await _fb.getDocs(_fb.query(tagsColRef));
+    if(snap.empty)await _fb.addDoc(tagsColRef,{tags:fixedTags});
+    else await _fb.updateDoc(_fb.doc(db,'settings',snap.docs[0].id),{tags:fixedTags});
+  }catch(e){console.error(e)}
+}
+function renderTagSelectors(){
+  ['link-tag-selector','note-tag-selector','file-tag-selector'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.innerHTML=fixedTags.length?fixedTags.map(t=>`<button class="tsel${selectedTags.has(t)?' on':''}" onclick="toggleTagSel('${t.replace(/'/g,"\\'")}',this)">${t}</button>`).join(''):'<span style="font-size:11px;color:var(--hint)">sem tags fixas — crie no ícone 🏷️</span>';
+  });
+}
+window.toggleTagSel=function(tag,el){
+  if(selectedTags.has(tag)){selectedTags.delete(tag);el.classList.remove('on')}
+  else{selectedTags.add(tag);el.classList.add('on')}
 };
 
-window.deleteItem = async function(id) {
-  if (!confirm('Apagar este item?')) return;
-  try { await _fb.deleteDoc(_fb.doc(db, 'items', id)); }
-  catch(e) { toast('erro ao apagar'); }
+// ── FETCH TITLE ──
+window.onUrlInput=function(){
+  const url=g('f-url');
+  document.getElementById('fetch-btn').disabled=!url;
+  document.getElementById('fetch-hint').textContent='';
+};
+window.fetchTitle=async function(){
+  const url=g('f-url');
+  if(!url)return;
+  const btn=document.getElementById('fetch-btn'),hint=document.getElementById('fetch-hint');
+  btn.disabled=true;btn.textContent='buscando...';hint.textContent='';
+  try{
+    const fullUrl=url.startsWith('http')?url:'https://'+url;
+    // Use allorigins proxy to bypass CORS
+    const proxy=`https://api.allorigins.win/get?url=${encodeURIComponent(fullUrl)}`;
+    const res=await fetch(proxy);
+    const data=await res.json();
+    const match=data.contents.match(/<title[^>]*>([^<]+)<\/title>/i);
+    if(match&&match[1]){
+      const title=match[1].trim().replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&#39;/g,"'").replace(/&quot;/g,'"');
+      document.getElementById('f-title').value=title;
+      hint.textContent='✓ título preenchido';hint.style.color='var(--accent)';
+    }else{hint.textContent='título não encontrado';hint.style.color='var(--hint)'}
+  }catch(e){hint.textContent='não foi possível buscar';hint.style.color='var(--red)'}
+  btn.disabled=false;btn.textContent='↓ usar título do site';
 };
 
-window.copyText = function(text) {
+// ── FILE HANDLING ──
+window.onFileSelect=function(e){handleFile(e.target.files[0])};
+window.onFileDrop=function(e){
+  e.preventDefault();document.getElementById('file-drop').classList.remove('over');
+  if(e.dataTransfer.files.length)handleFile(e.dataTransfer.files[0]);
+};
+function handleFile(file){
+  if(!file)return;
+  const MAX=700*1024;
+  if(file.size>MAX){toast(`Arquivo muito grande (${fmtSize(file.size)}). Limite: ~700 KB`);return}
+  pendingFile=file;
+  document.getElementById('file-selected').textContent=`✓ ${file.name} (${fmtSize(file.size)})`;
+}
+function fileToBase64(file){
+  return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)});
+}
+
+// ── COLLECT TAGS ──
+function collectTags(manualFieldId){
+  const manual=document.getElementById(manualFieldId).value.trim();
+  const manualArr=manual?manual.split(',').map(t=>t.trim().toLowerCase()).filter(Boolean):[];
+  return [...new Set([...selectedTags,...manualArr])];
+}
+
+// ── ADD ITEM ──
+window.addItem=async function(){
+  const btn=document.getElementById('save-btn');
+  btn.disabled=true;btn.textContent='salvando...';
+  try{
+    let item={type:currentType,createdAt:Date.now(),pinned:false};
+    if(currentType==='link'){
+      const url=g('f-url');
+      if(!url){toast('informe a URL');return}
+      item.title=g('f-title')||url;
+      item.url=url.startsWith('http')?url:'https://'+url;
+      item.tags=collectTags('f-tags');
+    }else if(currentType==='note'){
+      const body=g('n-body'),title=g('n-title');
+      if(!body&&!title){toast('escreva algo');return}
+      item.title=title||(body.slice(0,50)+(body.length>50?'...':''));
+      item.body=body;
+      item.tags=collectTags('n-tags');
+    }else if(currentType==='file'){
+      if(!pendingFile){toast('selecione um arquivo');return}
+      const prog=document.getElementById('upload-progress'),bar=document.getElementById('upload-bar');
+      prog.style.display='block';bar.style.width='30%';
+      const b64=await fileToBase64(pendingFile);
+      bar.style.width='70%';
+      item.title=g('f-file-desc')||pendingFile.name;
+      item.fileName=pendingFile.name;
+      item.fileType=pendingFile.type||'application/octet-stream';
+      item.fileSize=pendingFile.size;
+      item.fileData=b64;
+      item.expiresAt=Date.now()+(24*60*60*1000); // 24h
+      item.tags=collectTags('f-file-tags');
+      bar.style.width='90%';
+    }
+    await _fb.addDoc(colRef,item);
+    if(currentType==='file'){document.getElementById('upload-bar').style.width='100%';setTimeout(()=>{document.getElementById('upload-progress').style.display='none'},600)}
+    clearForm();toast('salvo!');
+  }catch(e){toast('erro ao salvar: '+e.message)}
+  finally{btn.disabled=false;btn.textContent='salvar'}
+};
+
+// ── DELETE / PIN ──
+window.deleteItem=async function(id){
+  if(!confirm('Apagar este item?'))return;
+  try{await _fb.deleteDoc(_fb.doc(db,'items',id))}
+  catch(e){toast('erro ao apagar')}
+};
+window.togglePin=async function(id,current){
+  try{await _fb.updateDoc(_fb.doc(db,'items',id),{pinned:!current})}
+  catch(e){toast('erro')}
+};
+
+// ── DOWNLOAD FILE ──
+window.downloadFile=function(b64,name){
+  const a=document.createElement('a');a.href=b64;a.download=name;a.click();
+};
+
+// ── COPY ──
+window.copyText=function(text){
   navigator.clipboard.writeText(text).then(()=>toast('copiado!')).catch(()=>toast('erro ao copiar'));
 };
 
-function fmtDate(ts) {
-  return new Date(ts).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+// ── TYPE / FILTER ──
+window.setType=function(t,el){
+  currentType=t;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));el.classList.add('on');
+  ['link-f','note-f','file-f'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById(t+'-f').style.display='block';
+  selectedTags.clear();renderTagSelectors();
+};
+window.setFilter=function(f,el){
+  currentFilter=f;
+  document.querySelectorAll('.chip').forEach(b=>b.classList.remove('on'));el.classList.add('on');
+  render();
+};
+
+// ── CLEANUP EXPIRED FILES ──
+async function cleanupExpired(){
+  try{
+    const now=Date.now();
+    const snap=await _fb.getDocs(_fb.query(colRef,_fb.where('type','==','file')));
+    snap.docs.forEach(async d=>{
+      if(d.data().expiresAt&&d.data().expiresAt<now){
+        await _fb.deleteDoc(_fb.doc(db,'items',d.id));
+      }
+    });
+  }catch(e){}
 }
 
-function render() {
-  const q = document.getElementById('search').value.toLowerCase();
-  let filtered = items.filter(i=>{
-    if (currentFilter!=='all' && i.type!==currentFilter) return false;
-    if (q) { const hay=(i.title+' '+(i.url||'')+' '+(i.body||'')+' '+(i.tags||[]).join(' ')).toLowerCase(); return hay.includes(q); }
+// ── RENDER ──
+function render(){
+  const q=document.getElementById('search').value.toLowerCase();
+  let filtered=items.filter(i=>{
+    if(currentFilter==='pinned')return i.pinned;
+    if(currentFilter!=='all'&&i.type!==currentFilter)return false;
+    if(q){const hay=(i.title+' '+(i.url||'')+' '+(i.body||'')+' '+(i.tags||[]).join(' ')).toLowerCase();return hay.includes(q)}
     return true;
   });
-  const list = document.getElementById('list');
-  if (!filtered.length) {
-    list.innerHTML='<div class="empty"><div class="ico">📋</div>nenhum item ainda.<br>Salve seu primeiro link ou anotação!</div>';
-    return;
+  // pinned first
+  filtered.sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0));
+
+  const list=document.getElementById('list');
+  if(!filtered.length){
+    list.innerHTML='<div class="empty"><div class="ico">📋</div>nenhum item ainda.</div>';return;
   }
-  list.innerHTML = filtered.map(item=>{
-    const badge = item.type==='link'?'<span class="badge badge-link">link</span>':'<span class="badge badge-note">nota</span>';
-    const tags = (item.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('');
-    const copyVal = item.type==='link' ? item.url : (item.body||item.title);
-    const copyEsc = copyVal.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    const body = item.type==='link'
-      ? `<a class="item-url" href="${item.url}" target="_blank" rel="noopener">${item.url}</a>`
-      : (item.body ? `<div class="item-body">${item.body}</div>` : '');
-    return `<div class="item">
-      <div class="item-top">${badge}<div class="item-title">${item.title}</div></div>
+  list.innerHTML=filtered.map(item=>{
+    const isExpired=item.expiresAt&&item.expiresAt<Date.now();
+    if(isExpired)return''; // expired files hidden
+
+    let badge='',body='',extra='';
+    if(item.type==='link'){
+      badge='<span class="badge badge-link">link</span>';
+      body=`<a class="item-url" href="${item.url}" target="_blank" rel="noopener">${item.url}</a>`;
+    }else if(item.type==='note'){
+      badge='<span class="badge badge-note">nota</span>';
+      if(item.body)body=`<div class="item-body">${item.body}</div>`;
+    }else if(item.type==='file'){
+      badge='<span class="badge badge-file">arquivo</span>';
+      const safeData=item.fileData?item.fileData.replace(/'/g,"\\'"):'';
+      const safeName=(item.fileName||'arquivo').replace(/'/g,"\\'");
+      body=`<button class="file-dl" onclick="downloadFile('${safeData}','${safeName}')">⬇ ${item.fileName||'arquivo'}</button>`;
+      extra=`<span class="file-info">${fmtSize(item.fileSize||0)}</span>`;
+      if(item.expiresAt){
+        const left=timeLeft(item.expiresAt);
+        extra+=` <span class="expire-badge">${left}</span>`;
+      }
+    }
+
+    const tags=(item.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('');
+    const pinIcon=item.pinned?'<span class="pin-icon">📌</span>':'';
+    const copyVal=item.type==='link'?item.url:(item.body||item.title||'');
+    const copyEsc=copyVal.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,' ');
+
+    return `<div class="item${item.pinned?' pinned':''}">
+      <div class="item-top">${badge}${pinIcon}<div class="item-title">${item.title}</div></div>
       ${body}
+      ${extra?`<div style="margin-bottom:4px">${extra}</div>`:''}
       <div class="item-footer">
         <div class="item-left">
           <div class="item-date">${fmtDate(item.createdAt)}</div>
-          ${tags?`<div class="tags">${tags}</div>`:''}
+          ${tags?`<div class="tags-row">${tags}</div>`:''}
         </div>
         <div class="actions">
-          <button class="iBtn cp" title="copiar" onclick="copyText('${copyEsc}')">⧉</button>
+          <button class="iBtn pin-btn${item.pinned?' on':''}" title="${item.pinned?'desafixar':'fixar'}" onclick="togglePin('${item.id}',${!!item.pinned})">📌</button>
+          ${item.type!=='file'?`<button class="iBtn cp" title="copiar" onclick="copyText('${copyEsc}')">⧉</button>`:''}
           <button class="iBtn del" title="apagar" onclick="deleteItem('${item.id}')">✕</button>
         </div>
       </div>
@@ -393,30 +589,37 @@ function render() {
   }).join('');
 }
 
-function toast(msg) {
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2000);
-}
-
-function startApp(cfg) {
+// ── START ──
+function startApp(cfg){
   document.getElementById('setup-overlay').style.display='none';
   document.getElementById('main').style.display='block';
-  try {
-    const app = _fb.initializeApp(cfg);
-    db = _fb.getFirestore(app);
-    colRef = _fb.collection(db,'items');
-    const q = _fb.query(colRef, _fb.orderBy('createdAt','desc'));
-    _fb.onSnapshot(q, snap=>{
-      items = snap.docs.map(d=>({id:d.id,...d.data()}));
-      render(); setDot('ok');
-    }, err=>{ setDot('err'); });
-  } catch(e) { setDot('err'); }
+  try{
+    const app=_fb.initializeApp(cfg);
+    db=_fb.getFirestore(app);
+    colRef=_fb.collection(db,'items');
+    tagsColRef=_fb.collection(db,'settings');
+
+    // listen items
+    const q=_fb.query(colRef,_fb.orderBy('createdAt','desc'));
+    _fb.onSnapshot(q,snap=>{
+      items=snap.docs.map(d=>({id:d.id,...d.data()}));
+      render();setDot('ok');
+    },()=>setDot('err'));
+
+    // listen fixed tags
+    _fb.onSnapshot(tagsColRef,snap=>{
+      if(!snap.empty){fixedTags=snap.docs[0].data().tags||[]}
+      else fixedTags=[];
+      renderFixedTagsList();renderTagSelectors();
+    });
+
+    // cleanup expired files on load
+    setTimeout(cleanupExpired,3000);
+  }catch(e){setDot('err')}
 }
 
-// init
-const cfg = getConfig();
-if (cfg) startApp(cfg);
+const cfg=getConfig();
+if(cfg)startApp(cfg);
 </script>
 </body>
 </html>
