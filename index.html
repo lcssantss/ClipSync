@@ -255,16 +255,34 @@ input::placeholder,textarea::placeholder{color:var(--hint)}
     <!-- file fields -->
     <div id="file-f" style="display:none">
       <div class="field">
-        <label>arquivo (máx. ~700 KB — expira em 24h automaticamente)</label>
+        <label>arquivo (máx. ~700 KB — inclui .zip, .rar e outros compactados)</label>
         <div class="file-drop" id="file-drop" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="onFileDrop(event)">
           <input type="file" id="f-file" onchange="onFileSelect(event)">
           <p>Clique ou arraste o arquivo aqui</p>
-          <small>Limite: ~700 KB · PDF, imagem, txt, etc.</small>
+          <small>Limite: ~700 KB · PDF, imagem, txt, .zip, .rar, etc.</small>
         </div>
         <div class="file-selected" id="file-selected"></div>
         <div class="upload-progress" id="upload-progress"><div class="upload-progress-bar" id="upload-bar"></div></div>
       </div>
       <div class="field"><label>descrição (opcional)</label><input type="text" id="f-file-desc" placeholder="Ex: Anotações de química"></div>
+      <div class="field">
+        <label>expirar em</label>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <div style="display:flex;gap:4px;flex-wrap:wrap" id="expiry-presets">
+            <button class="tsel on" data-h="1" onclick="setExpiry(1,this)">1h</button>
+            <button class="tsel" data-h="6" onclick="setExpiry(6,this)">6h</button>
+            <button class="tsel" data-h="24" onclick="setExpiry(24,this)">24h</button>
+            <button class="tsel" data-h="72" onclick="setExpiry(72,this)">3 dias</button>
+            <button class="tsel" data-h="168" onclick="setExpiry(168,this)">7 dias</button>
+            <button class="tsel" data-h="0" onclick="setExpiry(0,this)">nunca</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px">
+            <input type="number" id="custom-expiry-val" placeholder="ex: 48" min="1" max="8760" style="width:80px;height:30px;padding:0 8px;font-size:12px" oninput="setCustomExpiry()">
+            <span style="font-size:12px;color:var(--muted)">horas</span>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--hint);font-family:var(--mono);margin-top:5px" id="expiry-preview"></div>
+      </div>
       <div class="field">
         <label>tags</label>
         <div class="tag-selector" id="file-tag-selector"></div>
@@ -314,7 +332,7 @@ window.showInstructions=function(){const el=document.getElementById('instruction
 
 // ── STATE ──
 let currentType='link', currentFilter='all', items=[], fixedTags=[], selectedTags=new Set();
-let db, colRef, tagsColRef, pendingFile=null;
+let db, colRef, tagsColRef, pendingFile=null, expiryHours=1;
 
 // ── UTILS ──
 function setDot(s){
@@ -333,11 +351,43 @@ function clearForm(){
   renderTagSelectors();
   document.getElementById('fetch-hint').textContent='';
   document.getElementById('fetch-btn').disabled=true;
+  // reset expiry to 1h
+  expiryHours=1;
+  document.querySelectorAll('#expiry-presets .tsel').forEach(b=>b.classList.remove('on'));
+  const first=document.querySelector('#expiry-presets .tsel[data-h="1"]');
+  if(first)first.classList.add('on');
+  const cv=document.getElementById('custom-expiry-val');if(cv)cv.value='';
+  updateExpiryPreview();
+}
+
+window.setExpiry=function(h,el){
+  expiryHours=h;
+  document.querySelectorAll('#expiry-presets .tsel').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  const cv=document.getElementById('custom-expiry-val');if(cv)cv.value='';
+  updateExpiryPreview();
+};
+window.setCustomExpiry=function(){
+  const val=parseInt(document.getElementById('custom-expiry-val').value)||0;
+  if(val>0){
+    expiryHours=val;
+    document.querySelectorAll('#expiry-presets .tsel').forEach(b=>b.classList.remove('on'));
+  }
+  updateExpiryPreview();
+};
+function updateExpiryPreview(){
+  const el=document.getElementById('expiry-preview');
+  if(!el)return;
+  if(expiryHours===0){el.textContent='o arquivo não será removido automaticamente';return}
+  const ms=expiryHours*3600000;
+  const exp=new Date(Date.now()+ms);
+  el.textContent=`expira em: ${exp.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}`;
 }
 function toast(msg,dur=2200){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur)}
 function fmtDate(ts){return new Date(ts).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}
 function fmtSize(b){return b<1024?b+'B':b<1048576?(b/1024).toFixed(1)+'KB':(b/1048576).toFixed(1)+'MB'}
 function timeLeft(expiry){
+  if(!expiry)return'sem expiração';
   const diff=expiry-Date.now();
   if(diff<=0)return'expirado';
   const h=Math.floor(diff/3600000),m=Math.floor((diff%3600000)/60000);
@@ -467,7 +517,7 @@ window.addItem=async function(){
       item.fileType=pendingFile.type||'application/octet-stream';
       item.fileSize=pendingFile.size;
       item.fileData=b64;
-      item.expiresAt=Date.now()+(24*60*60*1000); // 24h
+      item.expiresAt=expiryHours>0 ? Date.now()+(expiryHours*3600000) : null;
       item.tags=collectTags('f-file-tags');
       bar.style.width='90%';
     }
@@ -506,6 +556,7 @@ window.setType=function(t,el){
   ['link-f','note-f','file-f'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById(t+'-f').style.display='block';
   selectedTags.clear();renderTagSelectors();
+  if(t==='file')updateExpiryPreview();
 };
 window.setFilter=function(f,el){
   currentFilter=f;
@@ -519,7 +570,8 @@ async function cleanupExpired(){
     const now=Date.now();
     const snap=await _fb.getDocs(_fb.query(colRef,_fb.where('type','==','file')));
     snap.docs.forEach(async d=>{
-      if(d.data().expiresAt&&d.data().expiresAt<now){
+      const exp=d.data().expiresAt;
+      if(exp&&exp<now){
         await _fb.deleteDoc(_fb.doc(db,'items',d.id));
       }
     });
@@ -544,7 +596,7 @@ function render(){
   }
   list.innerHTML=filtered.map(item=>{
     const isExpired=item.expiresAt&&item.expiresAt<Date.now();
-    if(isExpired)return''; // expired files hidden
+    if(isExpired)return''; // expired files hidden (never-expire files have null expiresAt)
 
     let badge='',body='',extra='';
     if(item.type==='link'){
@@ -562,6 +614,8 @@ function render(){
       if(item.expiresAt){
         const left=timeLeft(item.expiresAt);
         extra+=` <span class="expire-badge">${left}</span>`;
+      }else{
+        extra+=` <span class="expire-badge" style="background:var(--surface3);color:var(--hint)">sem expiração</span>`;
       }
     }
 
